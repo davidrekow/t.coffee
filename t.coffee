@@ -17,7 +17,7 @@ class t
   constructor: (template) ->
 
     @scrub = (val) =>
-      return new Option(val).innerHTML.replace(/"/g, '&quot;')
+      return new Option(val).innerHTML.replace(/["']/g, '&quot;')
 
     @get_value = (vars, key) =>
       parts = key.split('.')
