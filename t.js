@@ -26,7 +26,7 @@
 
       var _this = this;
       this.scrub = function(val) {
-        return new Option(val).innerHTML.replace(/"/g, '&quot;');
+        return new Option(val).innerHTML.replace(/["']/g, '&quot;');
       };
       this.get_value = function(vars, key) {
         var parts;
