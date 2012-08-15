@@ -1,8 +1,16 @@
-# t microtemplating microlibrary - coffeescript!
-# 
-# based on github.com/jasonmoo/t.js
-# MIT license
-# david@davidrekow.com
+###
+     _             __  __         
+    | |_   __ ___ / _|/ _|___ ___ 
+    |  _|_/ _/ _ \  _|  _/ -_) -_)
+     \__(_)__\___/_| |_| \___\___|
+
+  t.coffee - CoffeeScript port of t.js (Jason Mooberry <jasonmoo@me.com>),
+    a micro-templating framework in ~400 bytes gzipped
+
+  @author  David Rekow <david at davidrekow.com>
+  @license MIT
+  @version 0.1.0
+###
 
 class t
 
@@ -17,7 +25,7 @@ class t
         return false if parts[0] not of vars
         vars = vars[parts.shift()]
 
-        return if typeof vars is 'function' then vars() else vars
+        return (if typeof vars is 'function' then vars() else vars)
 
     @t = template
     return @
@@ -35,9 +43,7 @@ class t
       temp = ''
 
       if not val
-        return @render(inner, vars) if meta is '!'
-        return @render(if_false, vars) if has_else
-        return ''
+        return (if meta is '!' then @render(inner, vars) else (if has_else then @render(if_false, vars) else ''))
 
       if not meta
         return @render(`has_else ? if_true : inner, vars`)
@@ -54,8 +60,7 @@ class t
         return temp
     ).replace(valregex, (_, meta, key) =>
       val = @get_value(vars, key)
-      (return if meta is '%' then scrub(val) else val) if val?
-      return ''
+      return (if val? then (if meta is '%' then scrub(val) else val) else '')
     )
 
 window.t = t

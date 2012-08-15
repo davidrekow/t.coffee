@@ -1,5 +1,5 @@
-# t.js
-## A tiny javascript templating framework in ~400 bytes gzipped
+# t.coffee
+## A tiny coffeescript port of a tiny javascript templating framework
 
 `t.js` is a simple solution to interpolating values in an html string for insertion into the DOM via `innerHTML`.
 
@@ -15,6 +15,12 @@
  * Works in all modern browsers
  
 ### How to use
+
+Compile using included Cakefile:
+
+    $ cake compile (-s/--source [SOURCEDIR]) (-o/--output [OUTPUTDIR])
+
+Then use just like t.js:
 
 	var template = new t("<div>Hello {{=name}}</div>");
 	document.body.innerHtml = template.render({name: "World!"});
