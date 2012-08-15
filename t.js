@@ -78,7 +78,7 @@
       }).replace(valregex, function(_, meta, key) {
         var val;
         val = _this.get_value(vars, key);
-        return (val != null ? (meta === '%' ? scrub(val) : val) : '');
+        return (val != null ? (meta === '%' ? _this.scrub(val) : val) : '');
       });
     };
 

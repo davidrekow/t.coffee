@@ -60,7 +60,7 @@ class t
         return temp
     ).replace(valregex, (_, meta, key) =>
       val = @get_value(vars, key)
-      return (if val? then (if meta is '%' then scrub(val) else val) else '')
+      return (if val? then (if meta is '%' then @scrub(val) else val) else '')
     )
 
 window.t = t
