@@ -1,7 +1,6 @@
 ## t.coffee cakefile ##
 fs = require 'fs'
 {exec} = require 'child_process'
-uglify = require 'uglify-js'
 
 option '-s', '--source [DIR]', 'Source coffee directory.'
 option '-o', '--output [DIR]', 'Target compiled directory.'
