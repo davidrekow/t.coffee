@@ -31,8 +31,8 @@ class t
     return @
 
   render: (fragment, vars) =>
-    blockregex = /\{\{(([@!]?)(.+?))\}\}(([\s\S]+?)(\{\{:\1\}\}([\s\S]+?))?)\{\{\/\1\}\}/g
-    valregex = /\{\{([=%])(.+?)\}\}/g
+    blockregex = /\{\{\s*?(([@!]?)(.+?))\s*?\}\}(([\s\S]+?)(\{\{\s*?:\1\s*?\}\}([\s\S]+?))?)\{\{\s*?\/(?:\1|\s*?\3\s*?)\s*?\}\}/g
+    valregex = /\{\{\s+([=%])\s+(.+?)\s+\}\}/g
 
     if not vars?
       vars = fragment
