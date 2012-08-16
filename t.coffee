@@ -23,7 +23,6 @@ class t
       return new Option(val).innerHTML.replace(/["']/g, '&quot;')
 
     @get_value = (vars, key) =>
-
       parts = key.split('.')
       while parts.length
         return false if parts[0] not of vars
@@ -42,7 +41,6 @@ class t
 
     return fragment.replace(blockregex, (_, __, meta, key, inner, if_true, has_else, if_false) =>
       val = @get_value(vars, key)
-
       temp = ''
 
       if not val
