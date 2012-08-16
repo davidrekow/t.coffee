@@ -12,7 +12,7 @@
  * If/else blocks: `{{value}} <<markup>> {{:value}} <<alternate markup>> {{/value}}`
  * If not blocks: `{{!value}} <<markup>> {{/value}}`
  * Object/Array iteration: 
-    * `pass_context` = `true`: `{{@object_name}} Dynamic value 1: {{=key1}}, Dynamic value 2: {{=key2}} {{/object_name}}`
+    * `pass_context` = `true`: `{{@object_name}} value 1: {{=key1}}, value 2: {{=key2}} {{/object_name}}`
     * `pass_context` = `false`: `{{@object_name}} {{=_key}}: {{=_val}} {{/object_name}}`
  * Space-agnostic parsing: `{{=value}}`, `{{= value }}`, `{{ =value }}`, `{{ = value }}`
  * Multi-line templates (no removal of newlines required to render)
