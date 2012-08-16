@@ -14,15 +14,16 @@
 
 class t
 
-  constructor: (template, pass_context=true) ->
+  blockregex = /\{\{\s*?(([@!>]?)(.+?))\s*?\}\}(([\s\S]+?)(\{\{\s*?:\1\s*?\}\}([\s\S]+?))?)\{\{\s*?\/(?:\1|\s*?\3\s*?)\s*?\}\}/g
+  valregex = /\{\{\s*?([=%])\s*?(.+?)\s*?\}\}/g
 
-    @blockregex = /\{\{\s*?(([@!]?)(.+?))\s*?\}\}(([\s\S]+?)(\{\{\s*?:\1\s*?\}\}([\s\S]+?))?)\{\{\s*?\/(?:\1|\s*?\3\s*?)\s*?\}\}/g
-    @valregex = /\{\{\s*?([=%])\s*?(.+?)\s*?\}\}/g
+  constructor: (template) ->
 
     @scrub = (val) =>
       return new Option(val).innerHTML.replace(/["']/g, '&quot;')
 
     @get_value = (vars, key) =>
+
       parts = key.split('.')
       while parts.length
         return false if parts[0] not of vars
@@ -31,7 +32,6 @@ class t
       return (if typeof vars is 'function' then vars() else vars)
 
     @t = template
-    @pass = pass_context
     return @
 
   render: (fragment, vars) =>
@@ -40,8 +40,9 @@ class t
       vars = fragment
       fragment = @t
 
-    return fragment.replace(@blockregex, (_, __, meta, key, inner, if_true, has_else, if_false) =>
+    return fragment.replace(blockregex, (_, __, meta, key, inner, if_true, has_else, if_false) =>
       val = @get_value(vars, key)
+
       temp = ''
 
       if not val
@@ -51,24 +52,18 @@ class t
         return @render(`has_else ? if_true : inner, vars`)
 
       if meta is '@'
-        if @pass
-          if Array.isArray(val)
-            temp += @render(inner, item) for item in val
-          else
-            _val = {}
-            (_val[k] = val[k] if val.hasOwnProperty(k)) for k of val
-            temp += @render(inner, _val)
+        if Array.isArray(val)
+          temp += @render(inner, item) for item in val
         else
-          for i in val
-            vars._key = i
-            vars._val = val[i]
-            temp += render(inner, vars) if val.hasOwnProperty(i)
+          for k, v of val
+            if val.hasOwnProperty(k)
+              temp += @render(inner, {_key: k, _val: v})
 
-          delete vars._key
-          delete vars._val
-        
+      if meta is '>'
+        temp += @render(inner, val)
+       
       return temp
-    ).replace(@valregex, (_, meta, key) =>
+    ).replace(valregex, (_, meta, key) =>
       val = @get_value(vars, key)
       return (if val? then (if meta is '%' then @scrub(val) else val) else '')
     )

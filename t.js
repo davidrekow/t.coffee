@@ -20,16 +20,16 @@
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   t = (function() {
+    var blockregex, valregex;
 
-    function t(template, pass_context) {
-      var _this = this;
-      if (pass_context == null) {
-        pass_context = true;
-      }
+    blockregex = /\{\{\s*?(([@!>]?)(.+?))\s*?\}\}(([\s\S]+?)(\{\{\s*?:\1\s*?\}\}([\s\S]+?))?)\{\{\s*?\/(?:\1|\s*?\3\s*?)\s*?\}\}/g;
+
+    valregex = /\{\{\s*?([=%])\s*?(.+?)\s*?\}\}/g;
+
+    function t(template) {
       this.render = __bind(this.render, this);
 
-      this.blockregex = /\{\{\s*?(([@!]?)(.+?))\s*?\}\}(([\s\S]+?)(\{\{\s*?:\1\s*?\}\}([\s\S]+?))?)\{\{\s*?\/(?:\1|\s*?\3\s*?)\s*?\}\}/g;
-      this.valregex = /\{\{\s*?([=%])\s*?(.+?)\s*?\}\}/g;
+      var _this = this;
       this.scrub = function(val) {
         return new Option(val).innerHTML.replace(/["']/g, '&quot;');
       };
@@ -45,7 +45,6 @@
         return (typeof vars === 'function' ? vars() : vars);
       };
       this.t = template;
-      this.pass = pass_context;
       return this;
     }
 
@@ -55,8 +54,8 @@
         vars = fragment;
         fragment = this.t;
       }
-      return fragment.replace(this.blockregex, function(_, __, meta, key, inner, if_true, has_else, if_false) {
-        var i, item, k, temp, val, _i, _j, _len, _len1, _val;
+      return fragment.replace(blockregex, function(_, __, meta, key, inner, if_true, has_else, if_false) {
+        var item, k, temp, v, val, _i, _len;
         val = _this.get_value(vars, key);
         temp = '';
         if (!val) {
@@ -66,36 +65,28 @@
           return _this.render(has_else ? if_true : inner, vars);
         }
         if (meta === '@') {
-          if (_this.pass) {
-            if (Array.isArray(val)) {
-              for (_i = 0, _len = val.length; _i < _len; _i++) {
-                item = val[_i];
-                temp += _this.render(inner, item);
-              }
-            } else {
-              _val = {};
-              for (k in val) {
-                if (val.hasOwnProperty(k)) {
-                  _val[k] = val[k];
-                }
-              }
-              temp += _this.render(inner, _val);
+          if (Array.isArray(val)) {
+            for (_i = 0, _len = val.length; _i < _len; _i++) {
+              item = val[_i];
+              temp += _this.render(inner, item);
             }
           } else {
-            for (_j = 0, _len1 = val.length; _j < _len1; _j++) {
-              i = val[_j];
-              vars._key = i;
-              vars._val = val[i];
-              if (val.hasOwnProperty(i)) {
-                temp += render(inner, vars);
+            for (k in val) {
+              v = val[k];
+              if (val.hasOwnProperty(k)) {
+                temp += _this.render(inner, {
+                  _key: k,
+                  _val: v
+                });
               }
             }
-            delete vars._key;
-            delete vars._val;
           }
         }
+        if (meta === '>') {
+          temp += _this.render(inner, val);
+        }
         return temp;
-      }).replace(this.valregex, function(_, meta, key) {
+      }).replace(valregex, function(_, meta, key) {
         var val;
         val = _this.get_value(vars, key);
         return (val != null ? (meta === '%' ? _this.scrub(val) : val) : '');
