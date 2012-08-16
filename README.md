@@ -3,7 +3,7 @@
 
 [`t.js`](http://www.github.com/jasonmoo/t.js) is a simple solution to interpolating values in an html string for insertion into the DOM via `innerHTML`.
 
- [`t.coffee`](http://www.github.com/davidrekow/t.coffee) extends that simplicity into CoffeeScript, dynamically scoping render context to enable superslim templates.
+ [`t.coffee`](http://www.github.com/davidrekow/t.coffee) extends that simplicity into CoffeeScript, adding dynamically scoping render context to enable superslim templates.
 
 ### Features
  * Simple interpolation: `{{=value}}`
@@ -11,9 +11,8 @@
  * Name-spaced variables: `{{=User.address.city}}`
  * If/else blocks: `{{value}} <<markup>> {{:value}} <<alternate markup>> {{/value}}`
  * If not blocks: `{{!value}} <<markup>> {{/value}}`
- * Object/array iteration 
-    * Keys/Values: `{{@object}} {{=_key}} : {{=_val}} {{/object}}`
-    * Scoped to object context: `{{>object}}{{=name}}, {{=age}}, {{=city}} {{/object}}`
+ * Simple Object/array iteration: `{{@obj}}{{=_key}}:{{=_val}}{{/object}}`'
+ * Scoped to object/array item context: `{{>object}}{{=name}}, {{=age}}, {{=city}} {{/object}}`
  * Space-agnostic parsing: `{{=value}}`, `{{= value }}`, `{{ =value }}`, `{{ = value }}`
  * Multi-line templates (no removal of newlines required to render)
  * Render the same template multiple times with different data

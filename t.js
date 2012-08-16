@@ -11,7 +11,7 @@
 
   @author  David Rekow <david at davidrekow.com>
   @license MIT
-  @version 0.1.1
+  @version 0.1.2
 */
 
 
@@ -65,25 +65,25 @@
           return _this.render(has_else ? if_true : inner, vars);
         }
         if (meta === '@') {
+          for (k in val) {
+            v = val[k];
+            if (val.hasOwnProperty(k)) {
+              temp += _this.render(inner, {
+                _key: k,
+                _val: v
+              });
+            }
+          }
+        }
+        if (meta === '>') {
           if (Array.isArray(val)) {
             for (_i = 0, _len = val.length; _i < _len; _i++) {
               item = val[_i];
               temp += _this.render(inner, item);
             }
           } else {
-            for (k in val) {
-              v = val[k];
-              if (val.hasOwnProperty(k)) {
-                temp += _this.render(inner, {
-                  _key: k,
-                  _val: v
-                });
-              }
-            }
+            temp += _this.render(inner, val);
           }
-        }
-        if (meta === '>') {
-          temp += _this.render(inner, val);
         }
         return temp;
       }).replace(valregex, function(_, meta, key) {
