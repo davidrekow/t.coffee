@@ -25,7 +25,7 @@ Compile to JS as you normally would. You can also use the included Cakefile:
 
     $ cake compile (-s/--source [SOURCEDIR]) (-o/--output [OUTPUTDIR])
 
-Then use just like t.js:
+Then use just like [`t.js`](http://www.github.com/jasonmoo/t.js):
 
     var template = new t("<div>Hello {{=name}}</div>", true);      // new t(template_string, pass_context)
     document.body.innerHTML = template.render({name: "World!"});
