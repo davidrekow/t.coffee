@@ -3,7 +3,7 @@
 
 [`t.js`](http://www.github.com/jasonmoo/t.js) is a simple solution to interpolating values in an html string for insertion into the DOM via `innerHTML`.
 
- [`t.coffee`](http://www.github.com/davidrekow/t.coffee) extends that simplicity into CoffeeScript, adding dynamically scoping render context to enable superslim templates.
+ [`t.coffee`](http://www.github.com/davidrekow/t.coffee) extends that simplicity into CoffeeScript, adding dynamically scoped render context to enable superslim templates.
 
 ### Features
  * Simple interpolation: `{{=value}}`
