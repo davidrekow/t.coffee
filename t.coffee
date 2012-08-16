@@ -9,12 +9,15 @@
 
   @author  David Rekow <david at davidrekow.com>
   @license MIT
-  @version 0.1.0
+  @version 0.1.1
 ###
 
 class t
 
-  constructor: (template) ->
+  constructor: (template, pass_context=true) ->
+
+    @blockregex = /\{\{\s*?(([@!]?)(.+?))\s*?\}\}(([\s\S]+?)(\{\{\s*?:\1\s*?\}\}([\s\S]+?))?)\{\{\s*?\/(?:\1|\s*?\3\s*?)\s*?\}\}/g
+    @valregex = /\{\{\s*?([=%])\s*?(.+?)\s*?\}\}/g
 
     @scrub = (val) =>
       return new Option(val).innerHTML.replace(/["']/g, '&quot;')
@@ -25,20 +28,19 @@ class t
         return false if parts[0] not of vars
         vars = vars[parts.shift()]
 
-        return (if typeof vars is 'function' then vars() else vars)
+      return (if typeof vars is 'function' then vars() else vars)
 
     @t = template
+    @pass = pass_context
     return @
 
   render: (fragment, vars) =>
-    blockregex = /\{\{\s*?(([@!]?)(.+?))\s*?\}\}(([\s\S]+?)(\{\{\s*?:\1\s*?\}\}([\s\S]+?))?)\{\{\s*?\/(?:\1|\s*?\3\s*?)\s*?\}\}/g
-    valregex = /\{\{\s+([=%])\s+(.+?)\s+\}\}/g
 
     if not vars?
       vars = fragment
       fragment = @t
 
-    return fragment.replace(blockregex, (_, __, meta, key, inner, if_true, has_else, if_false) =>
+    return fragment.replace(@blockregex, (_, __, meta, key, inner, if_true, has_else, if_false) =>
       val = @get_value(vars, key)
       temp = ''
 
@@ -49,16 +51,24 @@ class t
         return @render(`has_else ? if_true : inner, vars`)
 
       if meta is '@'
-        for i, v of val
-          if {}.hasOwnProperty.call(val, i)
+        if @pass
+          if Array.isArray(val)
+            temp += @render(inner, item) for item in val
+          else
+            _val = {}
+            (_val[k] = val[k] if val.hasOwnProperty(k)) for k of val
+            temp += @render(inner, _val)
+        else
+          for i in val
             vars._key = i
-            vars._val = v
-            temp += @render(inner, vars)
+            vars._val = val[i]
+            temp += render(inner, vars) if val.hasOwnProperty(i)
 
-        delete vars._key
-        delete vars._val
-        return temp
-    ).replace(valregex, (_, meta, key) =>
+          delete vars._key
+          delete vars._val
+        
+      return temp
+    ).replace(@valregex, (_, meta, key) =>
       val = @get_value(vars, key)
       return (if val? then (if meta is '%' then @scrub(val) else val) else '')
     )

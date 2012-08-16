@@ -11,7 +11,7 @@
 
   @author  David Rekow <david at davidrekow.com>
   @license MIT
-  @version 0.1.0
+  @version 0.1.1
 */
 
 
@@ -21,10 +21,15 @@
 
   t = (function() {
 
-    function t(template) {
+    function t(template, pass_context) {
+      var _this = this;
+      if (pass_context == null) {
+        pass_context = true;
+      }
       this.render = __bind(this.render, this);
 
-      var _this = this;
+      this.blockregex = /\{\{\s*?(([@!]?)(.+?))\s*?\}\}(([\s\S]+?)(\{\{\s*?:\1\s*?\}\}([\s\S]+?))?)\{\{\s*?\/(?:\1|\s*?\3\s*?)\s*?\}\}/g;
+      this.valregex = /\{\{\s*?([=%])\s*?(.+?)\s*?\}\}/g;
       this.scrub = function(val) {
         return new Option(val).innerHTML.replace(/["']/g, '&quot;');
       };
@@ -36,24 +41,22 @@
             return false;
           }
           vars = vars[parts.shift()];
-          return (typeof vars === 'function' ? vars() : vars);
         }
+        return (typeof vars === 'function' ? vars() : vars);
       };
       this.t = template;
+      this.pass = pass_context;
       return this;
     }
 
     t.prototype.render = function(fragment, vars) {
-      var blockregex, valregex,
-        _this = this;
-      blockregex = /\{\{\s*?(([@!]?)(.+?))\s*?\}\}(([\s\S]+?)(\{\{\s*?:\1\s*?\}\}([\s\S]+?))?)\{\{\s*?\/(?:\1|\s*?\3\s*?)\s*?\}\}/g;
-      valregex = /\{\{\s+([=%])\s+(.+?)\s+\}\}/g;
+      var _this = this;
       if (!(vars != null)) {
         vars = fragment;
         fragment = this.t;
       }
-      return fragment.replace(blockregex, function(_, __, meta, key, inner, if_true, has_else, if_false) {
-        var i, temp, v, val;
+      return fragment.replace(this.blockregex, function(_, __, meta, key, inner, if_true, has_else, if_false) {
+        var i, item, k, temp, val, _i, _j, _len, _len1, _val;
         val = _this.get_value(vars, key);
         temp = '';
         if (!val) {
@@ -63,19 +66,36 @@
           return _this.render(has_else ? if_true : inner, vars);
         }
         if (meta === '@') {
-          for (i in val) {
-            v = val[i];
-            if ({}.hasOwnProperty.call(val, i)) {
-              vars._key = i;
-              vars._val = v;
-              temp += _this.render(inner, vars);
+          if (_this.pass) {
+            if (Array.isArray(val)) {
+              for (_i = 0, _len = val.length; _i < _len; _i++) {
+                item = val[_i];
+                temp += _this.render(inner, item);
+              }
+            } else {
+              _val = {};
+              for (k in val) {
+                if (val.hasOwnProperty(k)) {
+                  _val[k] = val[k];
+                }
+              }
+              temp += _this.render(inner, _val);
             }
+          } else {
+            for (_j = 0, _len1 = val.length; _j < _len1; _j++) {
+              i = val[_j];
+              vars._key = i;
+              vars._val = val[i];
+              if (val.hasOwnProperty(i)) {
+                temp += render(inner, vars);
+              }
+            }
+            delete vars._key;
+            delete vars._val;
           }
-          delete vars._key;
-          delete vars._val;
-          return temp;
         }
-      }).replace(valregex, function(_, meta, key) {
+        return temp;
+      }).replace(this.valregex, function(_, meta, key) {
         var val;
         val = _this.get_value(vars, key);
         return (val != null ? (meta === '%' ? _this.scrub(val) : val) : '');
