@@ -15,7 +15,7 @@
 class t
 
   blockregex = /\{\{\s*?(([@!>]?)(.+?))\s*?\}\}(([\s\S]+?)(\{\{\s*?:\1\s*?\}\}([\s\S]+?))?)\{\{\s*?\/(?:\1|\s*?\3\s*?)\s*?\}\}/g
-  valregex = /\{\{\s*?([<&=%])\s*?(.+?)\s*?\}\}/g
+  valregex = /\{\{\s*?([<&=%\+])\s*?(.+?)\s*?\}\}/g
 
   constructor: (template) ->
 
@@ -32,6 +32,7 @@ class t
 
     @t = template
     @temp = []
+    @children = {}
     return @
 
   render: (fragment, vars) =>
@@ -63,6 +64,7 @@ class t
       return temp
     ).replace(valregex, (_, meta, key) =>
       return @temp[parseInt(key)-1] if meta is '&'
+      return (val = (@children[key] ||= new window[key]()).render(vars)) if meta is '+'
       val = @get_value(vars, key)
       @temp.push(val) if meta is '<'
       return (if val? then (if meta is '%' then @scrub(val) else val) else '')

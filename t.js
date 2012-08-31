@@ -24,7 +24,7 @@
 
     blockregex = /\{\{\s*?(([@!>]?)(.+?))\s*?\}\}(([\s\S]+?)(\{\{\s*?:\1\s*?\}\}([\s\S]+?))?)\{\{\s*?\/(?:\1|\s*?\3\s*?)\s*?\}\}/g;
 
-    valregex = /\{\{\s*?([<&=%])\s*?(.+?)\s*?\}\}/g;
+    valregex = /\{\{\s*?([<&=%\+])\s*?(.+?)\s*?\}\}/g;
 
     function t(template) {
       this.render = __bind(this.render, this);
@@ -46,6 +46,7 @@
       };
       this.t = template;
       this.temp = [];
+      this.children = {};
       return this;
     }
 
@@ -89,9 +90,12 @@
         }
         return temp;
       }).replace(valregex, function(_, meta, key) {
-        var val;
+        var val, _base;
         if (meta === '&') {
           return _this.temp[parseInt(key) - 1];
+        }
+        if (meta === '+') {
+          return (val = ((_base = _this.children)[key] || (_base[key] = new window[key]())).render(vars));
         }
         val = _this.get_value(vars, key);
         if (meta === '<') {
