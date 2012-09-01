@@ -19,55 +19,54 @@ class t
 
   constructor: (template) ->
 
-    @scrub = (val) =>
-      return new Option(val).innerHTML.replace(/["']/g, '&quot;')
-
-    @get_value = (vars, key) =>
-      parts = key.split('.')
-      while parts.length
-        return false if parts[0] not of vars
-        vars = vars[parts.shift()]
-
-      return (if typeof vars is 'function' then vars() else vars)
-
     @t = template
-    @temp = []
-    @children = {}
+    @render = () => return t::render.apply(@, arguments)
     return @
 
-  render: (fragment, vars) =>
-    @temp = []
-    if not vars?
-      vars = fragment
-      fragment = @t
+  @:: =
+    scrub: (val) ->
+        return new Option(val).innerHTML.replace(/["']/g, '&quot;')
 
-    return fragment.replace(blockregex, (_, __, meta, key, inner, if_true, has_else, if_false) =>
-      val = @get_value(vars, key)
-      temp = ''
+    get_value: (vars, key) ->
+        parts = key.split('.')
+        while parts.length
+          return false if parts[0] not of vars
+          vars = vars[parts.shift()]
 
-      if not val
-        return (if meta is '!' then @render(inner, vars) else (if has_else then @render(if_false, vars) else ''))
+        return (if typeof vars is 'function' then vars() else vars)
 
-      if not meta
-        return @render(`has_else ? if_true : inner, vars`)
+    render: (fragment, vars) ->
+      if not vars?
+        vars = fragment
+        fragment = @t
 
-      if meta is '@'
-        for k, v of val
-          if val.hasOwnProperty(k)
-            temp += @render(inner, {_key: k, _val: v})
+      vars.temp = if not vars.temp then [] else if vars.temp.length > 10 then vars.temp.slice(@temp.length-10) else vars.temp
 
-      if meta is '>'
-        if Array.isArray(val) or val.constructor.name is 'ListField'
-          temp += @render(inner, item) for item in val
-        else temp += @render(inner, val)
+      return fragment.replace(blockregex, (_, __, meta, key, inner, if_true, has_else, if_false) =>
+        val = @get_value(vars, key)
+        temp = ''
 
-      return temp
-    ).replace(valregex, (_, meta, key) =>
-      return @temp[parseInt(key)-1] if meta is '&'
-      return (val = (@children[key] ||= new window[key]()).render(vars)) if meta is '+'
-      val = @get_value(vars, key)
-      @temp.push(val) if meta is '<'
-      return (if val? then (if meta is '%' then @scrub(val) else val) else '')
-    )
+        if not val
+          return (if meta is '!' then @render(inner, vars) else (if has_else then @render(if_false, vars) else ''))
+
+        if not meta
+          return @render(`has_else ? if_true : inner, vars`)
+
+        if meta is '@'
+          for k, v of val
+            if val.hasOwnProperty(k)
+              temp += @render(inner, {_key: k, _val: v, temp: vars.temp})
+
+        if meta is '>'
+          if Array.isArray(val) or val.constructor.name is 'ListField'
+            temp += @render(inner, item) for item in val
+          else temp += @render(inner, val)
+
+        return temp
+      ).replace(valregex, (_, meta, key) =>
+        val = if meta is '&' then vars.temp[parseInt(key)-1] else if meta is '+' then window[key].render(vars) else @get_value(vars, key)
+        if meta is '<' then vars.temp.push(val)
+        return (if val? then (if meta is '%' then @scrub(val) else val) else '')
+      )
 
 window.t = t

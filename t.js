@@ -16,8 +16,7 @@
 
 
 (function() {
-  var t,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var t;
 
   t = (function() {
     var blockregex, valregex;
@@ -27,13 +26,19 @@
     valregex = /\{\{\s*?([<&=%\+])\s*?(.+?)\s*?\}\}/g;
 
     function t(template) {
-      this.render = __bind(this.render, this);
-
       var _this = this;
-      this.scrub = function(val) {
-        return new Option(val).innerHTML.replace(/["']/g, '&quot;');
+      this.t = template;
+      this.render = function() {
+        return t.prototype.render.apply(_this, arguments);
       };
-      this.get_value = function(vars, key) {
+      return this;
+    }
+
+    t.prototype = {
+      scrub: function(val) {
+        return new Option(val).innerHTML.replace(/["']/g, '&quot;');
+      },
+      get_value: function(vars, key) {
         var parts;
         parts = key.split('.');
         while (parts.length) {
@@ -43,66 +48,56 @@
           vars = vars[parts.shift()];
         }
         return (typeof vars === 'function' ? vars() : vars);
-      };
-      this.t = template;
-      this.temp = [];
-      this.children = {};
-      return this;
-    }
-
-    t.prototype.render = function(fragment, vars) {
-      var _this = this;
-      this.temp = [];
-      if (!(vars != null)) {
-        vars = fragment;
-        fragment = this.t;
+      },
+      render: function(fragment, vars) {
+        var _this = this;
+        if (!(vars != null)) {
+          vars = fragment;
+          fragment = this.t;
+        }
+        vars.temp = !vars.temp ? [] : vars.temp.length > 10 ? vars.temp.slice(this.temp.length - 10) : vars.temp;
+        return fragment.replace(blockregex, function(_, __, meta, key, inner, if_true, has_else, if_false) {
+          var item, k, temp, v, val, _i, _len;
+          val = _this.get_value(vars, key);
+          temp = '';
+          if (!val) {
+            return (meta === '!' ? _this.render(inner, vars) : (has_else ? _this.render(if_false, vars) : ''));
+          }
+          if (!meta) {
+            return _this.render(has_else ? if_true : inner, vars);
+          }
+          if (meta === '@') {
+            for (k in val) {
+              v = val[k];
+              if (val.hasOwnProperty(k)) {
+                temp += _this.render(inner, {
+                  _key: k,
+                  _val: v,
+                  temp: vars.temp
+                });
+              }
+            }
+          }
+          if (meta === '>') {
+            if (Array.isArray(val) || val.constructor.name === 'ListField') {
+              for (_i = 0, _len = val.length; _i < _len; _i++) {
+                item = val[_i];
+                temp += _this.render(inner, item);
+              }
+            } else {
+              temp += _this.render(inner, val);
+            }
+          }
+          return temp;
+        }).replace(valregex, function(_, meta, key) {
+          var val;
+          val = meta === '&' ? vars.temp[parseInt(key) - 1] : meta === '+' ? window[key].render(vars) : _this.get_value(vars, key);
+          if (meta === '<') {
+            vars.temp.push(val);
+          }
+          return (val != null ? (meta === '%' ? _this.scrub(val) : val) : '');
+        });
       }
-      return fragment.replace(blockregex, function(_, __, meta, key, inner, if_true, has_else, if_false) {
-        var item, k, temp, v, val, _i, _len;
-        val = _this.get_value(vars, key);
-        temp = '';
-        if (!val) {
-          return (meta === '!' ? _this.render(inner, vars) : (has_else ? _this.render(if_false, vars) : ''));
-        }
-        if (!meta) {
-          return _this.render(has_else ? if_true : inner, vars);
-        }
-        if (meta === '@') {
-          for (k in val) {
-            v = val[k];
-            if (val.hasOwnProperty(k)) {
-              temp += _this.render(inner, {
-                _key: k,
-                _val: v
-              });
-            }
-          }
-        }
-        if (meta === '>') {
-          if (Array.isArray(val) || val.constructor.name === 'ListField') {
-            for (_i = 0, _len = val.length; _i < _len; _i++) {
-              item = val[_i];
-              temp += _this.render(inner, item);
-            }
-          } else {
-            temp += _this.render(inner, val);
-          }
-        }
-        return temp;
-      }).replace(valregex, function(_, meta, key) {
-        var val, _base;
-        if (meta === '&') {
-          return _this.temp[parseInt(key) - 1];
-        }
-        if (meta === '+') {
-          return (val = ((_base = _this.children)[key] || (_base[key] = new window[key]())).render(vars));
-        }
-        val = _this.get_value(vars, key);
-        if (meta === '<') {
-          _this.temp.push(val);
-        }
-        return (val != null ? (meta === '%' ? _this.scrub(val) : val) : '');
-      });
     };
 
     return t;
