@@ -66,4 +66,3 @@ t::render = (vars) ->
   return render(@t, vars)
 
 window.t = t
-return

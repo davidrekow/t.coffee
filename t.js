@@ -92,6 +92,4 @@
 
   window.t = t;
 
-  return;
-
 }).call(this);
