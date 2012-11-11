@@ -3,7 +3,7 @@
 
 [`t.js`](http://www.github.com/jasonmoo/t.js) is a simple solution to interpolating values in an html string for insertion into the DOM via `innerHTML`.
 
- [`t.coffee`](http://www.github.com/davidrekow/t.coffee) extends that simplicity into CoffeeScript, adding dynamically scoped render context, shorthand variable replaces & inline template includes to enable superslim templates.
+ [`t.coffee`](http://www.github.com/davidrekow/t.coffee) ports that simplicity to coffeescript, adding scoped iteration for concise, readable templates.
 
 ### Features
 `t.js`
@@ -13,32 +13,15 @@
  * Name-spaced variables: `{{=User.address.city}}`
  * If/else blocks: `{{value}} <<markup>> {{:value}} <<alternate markup>> {{/value}}`
  * If not blocks: `{{!value}} <<markup>> {{/value}}`
- * Simple Object/array iteration: `{{@obj}}{{=_key}}:{{=_val}}{{/object}}`'
+ * Simple object/array iteration: `{{@obj}}{{=_key}}:{{=_val}}{{/object}}`'
  * Multi-line templates (no removal of newlines required to render)
  * Render the same template multiple times with different data
  * Works in all modern browsers
 
 `t.coffee`
 
- * Iteration scoped to object/array item context: `{{>object}}{{=name}}, {{=age}}, {{=city}} {{/object}}`
- * Space-agnostic parsing: `{{=value}}`, `{{= value }}`, `{{ =value }}`, `{{ = value }}`
- * Simple shorthand vars for repeated properties within current block, max 10 (new vars will eject oldest to make room). Assignment: `{{<(var name)}}`, reference: `{{&(var #)}}`. Var number is assigned via order saved:
-
-		Hi, my name is {{<fullname}}. Well, {{&1}} is what my parents call me, my friends call me {{<nickname}}. I got the nickname {{&2}} long ago.
-
- * Template includes, rendered with current block context: `{{+MyTemplateClassName}}`. Templates should be instances of `t`, attached to the window:
-
-		window.CustomTemplate = new t('<span class="show-item" data-key="{{=key}}">{{=name}}</span>')
-
- Then include inline:
-
-		mytemplate = new t('Hi, {{=username}}!, This is my template: {{+CustomTemplate}}.')
-		myobj = {
-		  username: 'davidrekow'
-		  key: 'item key'
-		  name: 'item name'
-		}
-		html_with_include = mytemplate.render(myobj)
+ * Scoped object/array iteration: `{{>obj}}{{=name}}, {{=age}}, {{=city}} {{/obj}}`
+ * Space-agnostic parsing `{{=var}}` or `{{= var }}`
 
 ### How to use
 
