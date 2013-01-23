@@ -55,7 +55,7 @@
         return (meta === '!' ? render(inner, vars) : (has_else ? render(if_false, vars) : ''));
       }
       if (!meta) {
-        return (has_else ? render(if_true) : render(inner, vars));
+        return (has_else ? render(if_true, vars) : render(inner, vars));
       }
       if (meta === '@') {
         for (k in val) {

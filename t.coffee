@@ -44,7 +44,7 @@ render = (fragment, vars) ->
       return (if meta is '!' then render(inner, vars) else (if has_else then render(if_false, vars) else ''))
 
     if not meta
-      return (if has_else then render(if_true) else render(inner, vars))
+      return (if has_else then render(if_true, vars) else render(inner, vars))
 
     if meta is '@'
       for k, v of val
